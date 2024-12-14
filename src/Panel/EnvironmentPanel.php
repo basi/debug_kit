@@ -62,6 +62,7 @@ class EnvironmentPanel extends DebugPanel
             'error_reporting' => ini_get('error_reporting'),
             'upload_max_filesize' => ini_get('upload_max_filesize'),
             'post_max_size' => ini_get('post_max_size'),
+            'zend.assertions' => ini_get('zend.assertions'),
         ];
 
         // CakePHP Data
@@ -90,8 +91,13 @@ class EnvironmentPanel extends DebugPanel
         $var = get_defined_constants(true);
         $return['app'] = array_diff_key($var['user'], $return['cake'], $hiddenCakeConstants);
 
+        $includePaths = $this->_debug->includePaths();
+        foreach ($includePaths as $k => $v) {
+            $includePaths[$k] = Debugger::exportVarAsNodes($v);
+        }
+
         // Included files data
-        $return['includePaths'] = $this->_debug->includePaths();
+        $return['includePaths'] = $includePaths;
         $return['includedFiles'] = $this->prepareIncludedFiles();
 
         return $return;
