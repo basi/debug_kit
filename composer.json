@@ -1,5 +1,5 @@
 {
-    "name": "cakephp/debug_kit",
+    "name": "basi/debug_kit",
     "description": "CakePHP Debug Kit",
     "type": "cakephp-plugin",
     "keywords": ["cakephp", "debug", "kit"],
