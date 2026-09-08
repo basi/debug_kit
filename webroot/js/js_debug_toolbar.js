@@ -62,6 +62,23 @@ var DEBUGKIT = function () {
 		});
 	}
 
+	// Resolve the bundled jQuery URL from this script's own <script> tag,
+	// so pages don't need to emit an inline <script> (which a strict
+	// Content-Security-Policy may block) just to set DEBUGKIT_JQUERY_URL.
+	function jqueryUrl() {
+		if (window.DEBUGKIT_JQUERY_URL) {
+			return window.DEBUGKIT_JQUERY_URL;
+		}
+		var scripts = document.getElementsByTagName('script');
+		for (var i = 0; i < scripts.length; i++) {
+			var src = scripts[i].src;
+			if (src && src.indexOf('js_debug_toolbar') !== -1) {
+				return src.replace(/js_debug_toolbar\.js.*$/, 'jquery.js');
+			}
+		}
+		return null;
+	}
+
 	// Push checking for jQuery at the end of the stack.
 	// This will catch JS included at the bottom of a page.
 	setTimeout(function() {
@@ -77,7 +94,7 @@ var DEBUGKIT = function () {
 				DEBUGKIT.$ = jQuery.noConflict(true);
 				initOnReady();
 			};
-			req.open('get', window.DEBUGKIT_JQUERY_URL, true);
+			req.open('get', jqueryUrl(), true);
 			req.send();
 		}
 	}, 0);
