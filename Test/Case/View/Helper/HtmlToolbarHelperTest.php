@@ -360,7 +360,10 @@ class HtmlToolbarHelperTestCase extends CakeTestCase {
 		$this->Controller->Components->trigger('beforeRender', array($this->Controller));
 		$result = $this->Controller->render();
 		$result = str_replace(array("\n", "\r"), '', $result);
-		$this->assertRegexp('#<script\s*type="text/javascript"\s*src="/debug_kit/js/js_debug_toolbar.js(?:\?\d*?)?"\s*>\s?</script>#', $result);
+		$this->assertRegexp('#<script[^>]*src="/debug_kit/js/js_debug_toolbar\.js(?:\?\d*?)?"[^>]*></script>#', $result);
+		$this->assertRegexp('#<script[^>]*data-debugkit-jquery-url="/debug_kit/js/jquery\.js"[^>]*>#', $result);
+		$head = substr($result, 0, strpos($result, '</head>'));
+		$this->assertNotRegExp('#<script(?![^>]*src=)#', $head, 'DebugKit must not inject an inline <script> (blocked by strict CSP).');
 	}
 
 /**

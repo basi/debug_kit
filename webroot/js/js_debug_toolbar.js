@@ -62,6 +62,23 @@ var DEBUGKIT = function () {
 		});
 	}
 
+	// Resolve the bundled jQuery URL from the data attribute DebugKit puts on
+	// its own <script> tags, so no inline <script> (which a strict
+	// Content-Security-Policy blocks) is needed to pass it to the page.
+	function jqueryUrl() {
+		if (window.DEBUGKIT_JQUERY_URL) {
+			return window.DEBUGKIT_JQUERY_URL;
+		}
+		var scripts = document.getElementsByTagName('script');
+		for (var i = 0; i < scripts.length; i++) {
+			var url = scripts[i].getAttribute('data-debugkit-jquery-url');
+			if (url) {
+				return url;
+			}
+		}
+		return null;
+	}
+
 	// Push checking for jQuery at the end of the stack.
 	// This will catch JS included at the bottom of a page.
 	setTimeout(function() {
@@ -70,14 +87,21 @@ var DEBUGKIT = function () {
 			DEBUGKIT.$ = window.jQuery;
 			initOnReady();
 		} else {
+			var url = jqueryUrl();
+			if (!url) {
+				return;
+			}
 			var req = new XMLHttpRequest();
 			req.onload = function () {
+				if (this.status < 200 || this.status >= 300) {
+					return;
+				}
 				eval(this.responseText);
 				// Restore both $ and jQuery to the original values.
 				DEBUGKIT.$ = jQuery.noConflict(true);
 				initOnReady();
 			};
-			req.open('get', window.DEBUGKIT_JQUERY_URL, true);
+			req.open('get', url, true);
 			req.send();
 		}
 	}, 0);
