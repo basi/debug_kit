@@ -179,9 +179,10 @@ class HtmlToolbarHelper extends ToolbarHelper {
 		}
 
 		if (isset($view->viewVars['debugToolbarJavascript'])) {
+			$options = array('data-debugkit-jquery-url' => $this->webroot('/debug_kit/js/jquery.js'));
 			foreach ($view->viewVars['debugToolbarJavascript'] as $script) {
 				if ($script) {
-					$head .= $this->Html->script($script);
+					$head .= $this->Html->script($script, $options);
 				}
 			}
 		}

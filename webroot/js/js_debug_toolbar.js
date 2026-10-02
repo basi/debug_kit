@@ -62,18 +62,18 @@ var DEBUGKIT = function () {
 		});
 	}
 
-	// Resolve the bundled jQuery URL from this script's own <script> tag,
-	// so pages don't need to emit an inline <script> (which a strict
-	// Content-Security-Policy may block) just to set DEBUGKIT_JQUERY_URL.
+	// Resolve the bundled jQuery URL from the data attribute DebugKit puts on
+	// its own <script> tags, so no inline <script> (which a strict
+	// Content-Security-Policy blocks) is needed to pass it to the page.
 	function jqueryUrl() {
 		if (window.DEBUGKIT_JQUERY_URL) {
 			return window.DEBUGKIT_JQUERY_URL;
 		}
 		var scripts = document.getElementsByTagName('script');
 		for (var i = 0; i < scripts.length; i++) {
-			var src = scripts[i].src;
-			if (src && src.indexOf('js_debug_toolbar') !== -1) {
-				return src.replace(/js_debug_toolbar\.js.*$/, 'jquery.js');
+			var url = scripts[i].getAttribute('data-debugkit-jquery-url');
+			if (url) {
+				return url;
 			}
 		}
 		return null;
@@ -87,14 +87,21 @@ var DEBUGKIT = function () {
 			DEBUGKIT.$ = window.jQuery;
 			initOnReady();
 		} else {
+			var url = jqueryUrl();
+			if (!url) {
+				return;
+			}
 			var req = new XMLHttpRequest();
 			req.onload = function () {
+				if (this.status < 200 || this.status >= 300) {
+					return;
+				}
 				eval(this.responseText);
 				// Restore both $ and jQuery to the original values.
 				DEBUGKIT.$ = jQuery.noConflict(true);
 				initOnReady();
 			};
-			req.open('get', jqueryUrl(), true);
+			req.open('get', url, true);
 			req.send();
 		}
 	}, 0);
